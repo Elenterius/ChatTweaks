@@ -30,6 +30,7 @@ public class ChatView {
     public static final Pattern defaultFilterPattern = Pattern.compile("(?:<(?<s>[^>]+)>)? ?(?<m>.*)", Pattern.DOTALL);
     public static final Pattern groupPattern = Pattern.compile("\\$(?:([0-9])|\\{([\\w])\\})");
     public static final Pattern outputFormattingPattern = Pattern.compile("(\\\\~|~[0-9abcdefkolmnr])");
+    public static final Pattern stripFormattingCodePattern = Pattern.compile("\\xA7[0-9abcdefklmnor]");
     private static final EmoteScanner emoteScanner = new EmoteScanner();
 
     private String name;
@@ -107,6 +108,7 @@ public class ChatView {
     }
 
     public boolean messageMatches(String message) {
+        message = stripFormattingCodePattern.matcher(message).replaceAll("");
         Matcher matcher = compiledFilterPattern.matcher(message);
         return matcher.matches();
     }
@@ -138,11 +140,15 @@ public class ChatView {
             chatLines.remove(0);
         }
 
-        Matcher matcher = compiledFilterPattern.matcher(chatLine.getTextComponent().getUnformattedText());
-        if (!matcher.matches()) {
+        // the chat message is only stripped of the formatting codes for the initial filter matching (quick fix)
+        String stripped = stripFormattingCodePattern.matcher(chatLine.getTextComponent().getUnformattedText()).replaceAll("");
+        if (!compiledFilterPattern.matcher(stripped).matches()) {
             return chatLine;
         }
 
+        // the following matcher still uses the message which contains the formatting codes,
+        // since i don't know what side effects the stripped string could cause with the other regex patterns (i don't feel like testing it ^^)
+        Matcher matcher = compiledFilterPattern.matcher(chatLine.getTextComponent().getUnformattedText());
         try {
             if (chatLine.getSender() == null) {
                 chatLine.setSender(subTextComponent(chatLine.getTextComponent(), matcher.start("s"), matcher.end("s")));
