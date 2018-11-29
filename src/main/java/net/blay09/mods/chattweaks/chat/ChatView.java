@@ -146,18 +146,34 @@ public class ChatView {
             return chatLine;
         }
 
-        // the following matcher still uses the message which contains the formatting codes,
-        // since i don't know what side effects the stripped string could cause with the other regex patterns (i don't feel like testing it ^^)
+        return formatChatLineOutput(chatLine);
+    }
+
+    private void addChatLineUnchecked(ChatMessage chatLine) {
+        chatLine = chatLine.copy();
+        chatLines.add(chatLine);
+        if (chatLines.size() > ChatTweaks.MAX_MESSAGES) {
+            chatLines.remove(0);
+        }
+
+        formatChatLineOutput(chatLine);
+    }
+
+    private ChatMessage formatChatLineOutput(ChatMessage chatLine) {
+        // uses chat line with formatting codes,
+        // because i don't know what side effects the stripped string could cause with the other regex patterns (i don't feel like testing it ^^)
         Matcher matcher = compiledFilterPattern.matcher(chatLine.getTextComponent().getUnformattedText());
-        try {
-            if (chatLine.getSender() == null) {
+
+        if (chatLine.getSender() == null) {
+            try {
                 chatLine.setSender(subTextComponent(chatLine.getTextComponent(), matcher.start("s"), matcher.end("s")));
+            } catch (IllegalArgumentException /* no capturing group*/ | IllegalStateException /*no match or match operation failed*/ ignored) {
             }
-            if (chatLine.getMessage() == null) {
+        }
+        if (chatLine.getMessage() == null) {
+            try {
                 chatLine.setMessage(subTextComponent(chatLine.getTextComponent(), matcher.start("m"), matcher.end("m")));
-            }
-        } catch (IllegalArgumentException ignored) {
-            if (chatLine.getMessage() == null) {
+            } catch (IllegalArgumentException /* no capturing group*/ | IllegalStateException /*no match or match operation failed*/ ignored) {
                 chatLine.setMessage(chatLine.getTextComponent());
             }
         }
@@ -392,6 +408,6 @@ public class ChatView {
                 .sorted(Comparator.comparingInt(ChatMessage::getId).reversed())
                 .limit(ChatTweaks.MAX_MESSAGES)
                 .sorted(Comparator.comparingInt(ChatMessage::getId))
-                .forEach(this::addChatLine);
+                .forEach(this::addChatLineUnchecked);
     }
 }
