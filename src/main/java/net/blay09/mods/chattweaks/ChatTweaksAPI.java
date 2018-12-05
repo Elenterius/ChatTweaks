@@ -7,7 +7,6 @@ import net.blay09.mods.chattweaks.chat.emotes.IEmoteLoader;
 import net.blay09.mods.chattweaks.image.renderable.IChatRenderable;
 import net.blay09.mods.chattweaks.image.renderable.ImageLoader;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -57,7 +56,7 @@ public class ChatTweaksAPI {
 				emote.setImage(ImageLoader.loadImage(in));
 				return true;
 			} catch (IOException e) {
-				System.err.println("Failed to load emote from cache: " + e.getMessage());
+				ChatTweaks.logger.error("Failed to load emote from cache: ", e);
 			}
 		}
 		return false;

@@ -1,25 +1,30 @@
 package net.blay09.mods.chattweaks.chat.emotes.twitch;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonReader;
 import net.blay09.mods.chattweaks.ChatTweaks;
 import net.blay09.mods.chattweaks.ChatTweaksAPI;
+import net.blay09.mods.chattweaks.balyware.CachedAPI;
 import net.blay09.mods.chattweaks.chat.emotes.IEmote;
 import net.blay09.mods.chattweaks.chat.emotes.IEmoteGroup;
 import net.blay09.mods.chattweaks.chat.emotes.IEmoteLoader;
-import net.blay09.mods.chattweaks.balyware.CachedAPI;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextFormatting;
 
 import java.net.URI;
+import java.util.Optional;
 
 public class BTTVEmotes implements IEmoteLoader {
 
 	private String urlTemplate;
 
 	public BTTVEmotes() throws Exception {
-		JsonObject root = CachedAPI.loadCachedAPI("https://api.betterttv.net/2/emotes", "bttv_emotes.json", null);
-		if(root != null) {
+		Optional<JsonReader> optionalReader = CachedAPI.loadCachedAPI("https://api.betterttv.net/2/emotes", "bttv_emotes.json", null);
+		if(optionalReader.isPresent()) {
+			Gson gson = new Gson();
+			JsonObject root = gson.fromJson(optionalReader.get(), JsonObject.class);
 			if (!root.has("status") && root.get("status").getAsInt() != 200) {
 				throw new Exception("Failed to grab BTTV emotes.");
 			}
@@ -32,7 +37,7 @@ public class BTTVEmotes implements IEmoteLoader {
 				IEmote emote = ChatTweaksAPI.registerEmote(code, this);
 				emote.setCustomData(entry.get("id").getAsString());
 				emote.addTooltip(TextFormatting.GRAY + I18n.format(ChatTweaks.MOD_ID + ":gui.chat.tooltipBTTVEmotes"));
-				emote.setImageCacheFile("bttv-" + entry.get("id").getAsString());
+				emote.setImageCacheFile("/bttv/bttv-" + entry.get("id").getAsString());
 				group.addEmote(emote);
 			}
 		}
