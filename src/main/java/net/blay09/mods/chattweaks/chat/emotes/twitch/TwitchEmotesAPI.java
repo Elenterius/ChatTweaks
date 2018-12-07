@@ -1,7 +1,5 @@
 package net.blay09.mods.chattweaks.chat.emotes.twitch;
 
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.MalformedJsonException;
 import net.blay09.mods.chattweaks.ChatTweaks;
@@ -11,7 +9,6 @@ import net.minecraft.util.IntHashMap;
 
 import javax.annotation.Nullable;
 import java.io.File;
-import java.io.IOException;
 import java.util.Optional;
 
 public class TwitchEmotesAPI {
@@ -26,15 +23,15 @@ public class TwitchEmotesAPI {
 
     private static byte restoreAttempts = 0;
 
-    public static boolean loadEmoteSets() throws Exception {
+    public static boolean loadEmoteSets() {
+        Optional<JsonReader> optionalReader = CachedAPI.loadCachedAPI("https://twitchemotes.com/api_cache/v3/sets.json", "twitch_emotesets_v3.json", null);
+        if (!optionalReader.isPresent()) {
+            ChatTweaks.logger.error("Failed to load Twitch emote set mappings.");
+            return false;
+        }
+
         try {
-            Optional<JsonReader> optionalReader = CachedAPI.loadCachedAPI("https://twitchemotes.com/api_cache/v3/sets.json", "twitch_emotesets_v3.json", null);
-            if (!optionalReader.isPresent()) {
-                throw new IOException();
-            }
-
             JsonReader reader = optionalReader.get();
-
             int key;
             reader.beginObject();
             while (reader.hasNext()) {
@@ -59,12 +56,8 @@ public class TwitchEmotesAPI {
             reader.endObject();
             reader.close();
             return true;
-        } catch (JsonSyntaxException e) {
-            ChatTweaks.logger.error("Invalid Json Syntax of File: ", e);
-        } catch (JsonIOException e) {
-            ChatTweaks.logger.error("An error occurred trying to load a cached API result: ", e);
         } catch (MalformedJsonException e) {
-            ChatTweaks.logger.warn("cache file twitch_emotesets_v3.json is corrupted");
+            ChatTweaks.logger.error("cache file twitch_emotesets_v3.json is corrupted, attempting restore...");
             boolean invalidated = CachedAPI.invalidateCacheFile(new File(CachedAPI.getCacheDirectory(), "twitch_emotesets_v3.json"));
             if (invalidated) {
                 if (restoreAttempts < 3) {
@@ -72,10 +65,12 @@ public class TwitchEmotesAPI {
                     if (loadEmoteSets()) {
                         restoreAttempts = 0;
                     } else {
-                        ChatTweaks.logger.warn("Restore Attempt " + restoreAttempts + " failed!");
+                        ChatTweaks.logger.error("Restore Attempt " + restoreAttempts + " failed!");
                     }
                 }
             }
+        } catch (Exception e) {
+            ChatTweaks.logger.error("Failed to load Twitch emote set mappings: ", e);
         }
         return false;
     }

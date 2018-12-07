@@ -12,7 +12,6 @@ import net.blay09.mods.chattweaks.chat.emotes.IEmoteLoader;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextFormatting;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
@@ -37,10 +36,9 @@ public class TwitchSubscriberEmotes implements IEmoteLoader {
 //            {"code":"\\:-?\\)","emoticon_set":0,"id":1},
 //            {"code":"\\:-?\\(","emoticon_set":0,"id":2},
 
+            Gson gson = new Gson();
+            JsonReader reader = optionalReader.get();
             try {
-                Gson gson = new Gson();
-                JsonReader reader = optionalReader.get();
-
                 reader.beginObject();
                 reader.skipValue(); // emoticons token
                 reader.beginArray();
@@ -71,8 +69,8 @@ public class TwitchSubscriberEmotes implements IEmoteLoader {
                 reader.endArray();
                 reader.endObject();
                 reader.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                ChatTweaks.logger.error("Failed to load Twitch subscriber emotes: ", e);
             }
         }
     }

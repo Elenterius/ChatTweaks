@@ -20,26 +20,33 @@ public class BTTVChannelEmotes implements IEmoteLoader {
 
     private String urlTemplate;
 
-    public BTTVChannelEmotes(String channelName) throws Exception {
+    public BTTVChannelEmotes(String channelName) {
         Optional<JsonReader> optionalReader = CachedAPI.loadCachedAPI("https://api.betterttv.net/2/channels/" + channelName, "bttv_emotes_" + channelName + ".json", null);
         if (optionalReader.isPresent()) {
             Gson gson = new Gson();
-            JsonObject root = gson.fromJson(optionalReader.get(), JsonObject.class);
-            if (!root.has("status") && root.get("status").getAsInt() != 200) {
-                throw new Exception("Failed to grab BTTV channel emotes.");
+            try {
+                JsonObject root = gson.fromJson(optionalReader.get(), JsonObject.class);
+                if (!root.has("status") && root.get("status").getAsInt() != 200) {
+                    ChatTweaks.logger.error("Failed to load BetterTTV emotes for channel " + channelName);
+                    return;
+                }
+                IEmoteGroup group = ChatTweaksAPI.registerEmoteGroup("BTTV-" + channelName);
+                urlTemplate = root.get("urlTemplate").getAsString();
+                JsonArray emotes = root.getAsJsonArray("emotes");
+                for (int i = 0; i < emotes.size(); i++) {
+                    JsonObject entry = emotes.get(i).getAsJsonObject();
+                    String code = entry.get("code").getAsString();
+                    IEmote emote = ChatTweaksAPI.registerEmote(code, this);
+                    emote.setCustomData(entry.get("id").getAsString());
+                    emote.addTooltip(TextFormatting.GRAY + I18n.format(ChatTweaks.MOD_ID + ":gui.chat.tooltipEmoteChannel") + " " + entry.get("channel").getAsString());
+                    emote.setImageCacheFile("bttv-" + entry.get("id").getAsString());
+                    group.addEmote(emote);
+                }
+            } catch (Exception e) {
+                ChatTweaks.logger.error("Failed to load BetterTTV emotes for channel " + channelName + ": ", e);
             }
-            IEmoteGroup group = ChatTweaksAPI.registerEmoteGroup("BTTV-" + channelName);
-            urlTemplate = root.get("urlTemplate").getAsString();
-            JsonArray emotes = root.getAsJsonArray("emotes");
-            for (int i = 0; i < emotes.size(); i++) {
-                JsonObject entry = emotes.get(i).getAsJsonObject();
-                String code = entry.get("code").getAsString();
-                IEmote emote = ChatTweaksAPI.registerEmote(code, this);
-                emote.setCustomData(entry.get("id").getAsString());
-                emote.addTooltip(TextFormatting.GRAY + I18n.format(ChatTweaks.MOD_ID + ":gui.chat.tooltipEmoteChannel") + " " + entry.get("channel").getAsString());
-                emote.setImageCacheFile("bttv-" + entry.get("id").getAsString());
-                group.addEmote(emote);
-            }
+        } else {
+            ChatTweaks.logger.error("Failed to load BetterTTV emotes for channel " + channelName);
         }
     }
 
