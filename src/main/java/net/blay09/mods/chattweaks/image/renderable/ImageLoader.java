@@ -141,7 +141,6 @@ public class ImageLoader {
                 } else {
                     BufferedImage image = reader.read(0);
                     if (saveToFile != null) {
-                        if (!saveToFile.getParentFile().exists()) saveToFile.getParentFile().mkdirs();
                         try (ImageOutputStream out = ImageIO.createImageOutputStream(saveToFile)) {
                             ImageWriter writer = ImageIO.getImageWriter(reader);
                             writer.setOutput(out);

@@ -50,7 +50,7 @@ public class TwitchGlobalEmotes implements IEmoteLoader {
             }
             emote.setCustomData(id);
             emote.addTooltip(tooltip);
-            emote.setImageCacheFile("/twitch/twitch-" + id);
+            emote.setImageCacheFile("twitch-" + id);
             group.addEmote(emote);
             TwitchEmotesAPI.registerTwitchEmote(id, emote);
         }

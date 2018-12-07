@@ -62,7 +62,7 @@ public class TwitchSubscriberEmotes implements IEmoteLoader {
                         if (channel != null) {
                             emote.addTooltip(TextFormatting.GRAY + I18n.format(ChatTweaks.MOD_ID + ":gui.chat.tooltipEmoteChannel") + " " + channel);
                         }
-                        emote.setImageCacheFile("/twitch/twitch-" + id);
+                        emote.setImageCacheFile("twitch-" + id);
                         group.addEmote(emote);
                         TwitchEmotesAPI.registerTwitchEmote(id, emote);
                     }

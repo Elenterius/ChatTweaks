@@ -33,7 +33,7 @@ public class TwitchEmotesAPI {
                 throw new IOException();
             }
 
-            JsonReader reader = optionalReader.get(); //TODO: correctly implement Optional use
+            JsonReader reader = optionalReader.get();
 
             int key;
             reader.beginObject();

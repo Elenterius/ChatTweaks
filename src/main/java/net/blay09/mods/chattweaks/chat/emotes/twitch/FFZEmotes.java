@@ -18,7 +18,7 @@ import java.net.URL;
 public class FFZEmotes implements IEmoteLoader {
 
 	public FFZEmotes() throws Exception {
-		URL apiURL = new URL("http://api.frankerfacez.com/v1/set/global");
+		URL apiURL = new URL("https://api.frankerfacez.com/v1/set/global");
 		InputStreamReader reader = new InputStreamReader(apiURL.openStream());
 		Gson gson = new Gson();
 		JsonObject root = gson.fromJson(reader, JsonObject.class);

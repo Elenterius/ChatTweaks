@@ -37,7 +37,7 @@ public class BTTVEmotes implements IEmoteLoader {
 				IEmote emote = ChatTweaksAPI.registerEmote(code, this);
 				emote.setCustomData(entry.get("id").getAsString());
 				emote.addTooltip(TextFormatting.GRAY + I18n.format(ChatTweaks.MOD_ID + ":gui.chat.tooltipBTTVEmotes"));
-				emote.setImageCacheFile("/bttv/bttv-" + entry.get("id").getAsString());
+				emote.setImageCacheFile("bttv-" + entry.get("id").getAsString());
 				group.addEmote(emote);
 			}
 		}

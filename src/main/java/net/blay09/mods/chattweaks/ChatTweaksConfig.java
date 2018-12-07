@@ -58,6 +58,7 @@ public class ChatTweaksConfig {
     }
 
     public static void postInitLoad(Configuration config) {
+        ChatTweaks.logger.debug("reloading Emoticons...");
         EmoteRegistry.reloadEmoticons();
         new Thread(() -> {
             EmoteRegistry.isLoading = true;

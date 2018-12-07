@@ -28,10 +28,10 @@ public class CachedAPI {
     }
 
     public static Optional<JsonReader> loadCachedAPI(String url, File cacheFile, long maxCacheTime, @Nullable String accept) {
-        //TODO: check if cache file is corrupted (e.g. SHA)
+        //TODO: check if cache file is corrupted? (e.g. md5/crc32)
         if (!cacheFile.exists() || (System.currentTimeMillis() - cacheFile.lastModified() >= maxCacheTime)) {
             if (!loadRemote(url, accept, cacheFile)) {
-                ChatTweaks.logger.warn("failed to download new data, reading old cache file");
+                ChatTweaks.logger.error("failed to download new cache data, reading old cache data");
             }
         }
 
@@ -46,7 +46,7 @@ public class CachedAPI {
     }
 
     private static boolean loadRemote(String url, @Nullable String accept, File cacheFile) {
-        ChatTweaks.logger.debug("downloading file");
+        ChatTweaks.logger.debug("downloading cache file");
         try {
             URL apiURL = new URL(url);
             HttpURLConnection connection = (HttpURLConnection) apiURL.openConnection();
@@ -55,29 +55,19 @@ public class CachedAPI {
             }
             connection.setRequestProperty("Accept-Encoding", "gzip");
 
-            String encoding = connection.getContentEncoding();
-            ChatTweaks.logger.debug("Encoding: " + encoding);
-
             InputStream inputStream;
-            if (encoding.equals("gzip"))
-            {
+            if (connection.getContentEncoding().equals("gzip")) {
                 inputStream = new GzipCompressorInputStream(connection.getInputStream());
-            }
-            else
-            {
+            } else {
                 inputStream = connection.getInputStream();
             }
 
             long bytes = Files.copy(inputStream, cacheFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            ChatTweaks.logger.debug((float)(bytes * 1e-6) + " MB written");
-            ChatTweaks.logger.debug("cache file created successfully");
-
-            //TODO: calculate SHA?
-
+            ChatTweaks.logger.debug((float) (bytes * 1e-6) + " MB written");
             return true;
         } catch (UnknownHostException e) {
-            ChatTweaks.logger.error("Can't connect to external Server, network connection may be interrupted: ", e);
-            //TODO: check if network connection is even possible aka "minecraft online mode"
+            ChatTweaks.logger.error("Can't connect to a Server, network connection may be interrupted: ", e);
+            //TODO: check if network connection is even possible aka "minecraft client authenticated" or ping 8.8.8.8/1.1.1.1 --> differentiate between no network and DNS lookup failure?
         } catch (IOException e) {
             ChatTweaks.logger.error("An error occurred trying to load from an API: ", e);
         }
@@ -85,17 +75,24 @@ public class CachedAPI {
         return false;
     }
 
-    public static boolean invalidateCacheFile(File cacheFile) {
-        ChatTweaks.logger.debug("invalidating cache file...");
-        return cacheFile.setLastModified(cacheFile.lastModified() - DEFAULT_CACHE_TIME * 2);
-    }
-
     public static File getCacheDirectory() {
-        File file = new File(Minecraft.getMinecraft().mcDataDir, "ChatTweaks/cache/");
+        File file = new File(Minecraft.getMinecraft().mcDataDir, "chattweaks/cache/");
         if (!file.exists() && !file.mkdirs()) {
             throw new RuntimeException("Could not create cache directory for Chat Tweaks.");
         }
         return file;
     }
 
+    public static File getImageCacheDirectory() {
+        File file = new File(Minecraft.getMinecraft().mcDataDir, "chattweaks/cache/images");
+        if (!file.exists() && !file.mkdirs()) {
+            throw new RuntimeException("Could not create image cache directory for Chat Tweaks.");
+        }
+        return file;
+    }
+
+    public static boolean invalidateCacheFile(File cacheFile) {
+        ChatTweaks.logger.debug("invalidating cached file: " + cacheFile.getPath());
+        return cacheFile.setLastModified(cacheFile.lastModified() - DEFAULT_CACHE_TIME * 2);
+    }
 }

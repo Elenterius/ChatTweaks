@@ -94,9 +94,9 @@ public class ChatTweaks {
             logger.error("Failed to create ChatTweaks config directory.");
         }
 
-        File cacheDir = new File(Minecraft.getMinecraft().mcDataDir, "ChatTweaks/cache/");
+        File cacheDir = new File(Minecraft.getMinecraft().mcDataDir, "chattweaks/cache/images");
         if (!cacheDir.exists() && !cacheDir.mkdirs()) {
-            logger.error("Failed to create ChatTweaks cache directory.");
+            logger.error("Failed to create ChatTweaks cache directory structure.");
         }
     }
 
